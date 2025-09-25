@@ -69,7 +69,7 @@ export function MyGamesPage() {
     if (!address) return;
     setBusyId(id);
     try {
-      const enc = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'getMyEncryptedRolls', args: [BigInt(id)] })) as readonly `0x${string}`[];
+      const enc = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'getMyEncryptedRolls', args: [BigInt(id), address] })) as readonly `0x${string}`[];
       const allZero = enc.every((h) => h === ZeroHash);
       if (allZero) { return; }
 
@@ -131,7 +131,7 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
     (async () => {
       const g = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'games', args: [BigInt(id)] })) as GameTuple;
       const a = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'getAction', args: [BigInt(id), me] })) as number;
-      const enc = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'getMyEncryptedRolls', args: [BigInt(id)] })) as readonly `0x${string}`[];
+      const enc = (await client.readContract({ address: CONTRACT_ADDRESS as `0x${string}`, abi: CONTRACT_ABI as any, functionName: 'getMyEncryptedRolls', args: [BigInt(id), me] })) as readonly `0x${string}`[];
       setG(g); setAction(Number(a)); setEnc(enc);
     })();
   }, [client, id, me]);
@@ -180,4 +180,3 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
     </div>
   );
 }
-

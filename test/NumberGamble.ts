@@ -24,8 +24,8 @@ describe("NumberGamble", function () {
     await expect(game.connect(creator).start(gameId)).to.emit(game, "Started");
 
     // Each player should get encrypted rolls (bytes32 not zero)
-    const e1 = await game.connect(p1).getMyEncryptedRolls(gameId);
-    const e2 = await game.connect(p2).getMyEncryptedRolls(gameId);
+    const e1 = await game.connect(p1).getMyEncryptedRolls(gameId, await p1.getAddress());
+    const e2 = await game.connect(p2).getMyEncryptedRolls(gameId, await p2.getAddress());
     for (let i = 0; i < 3; i++) {
       expect(e1[i]).to.not.eq(ethers.ZeroHash);
       expect(e2[i]).to.not.eq(ethers.ZeroHash);
@@ -95,4 +95,3 @@ describe("NumberGamble", function () {
     expect(g.winner).to.eq(expectedWinner);
   });
 });
-
