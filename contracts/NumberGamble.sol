@@ -197,10 +197,11 @@ contract NumberGamble is SepoliaConfig {
         return _players[gameId];
     }
 
-    /// @notice Return encrypted rolls for caller
-    function getMyEncryptedRolls(uint256 gameId) external view returns (euint32[3] memory) {
-        require(isPlayer[gameId][msg.sender], "Not in game");
-        return _encRolls[gameId][msg.sender];
+    /// @notice Return encrypted rolls for a player
+    /// @dev Do not rely on msg.sender in view functions
+    function getMyEncryptedRolls(uint256 gameId, address player) external view returns (euint32[3] memory) {
+        require(isPlayer[gameId][player], "Not in game");
+        return _encRolls[gameId][player];
     }
 
     /// @notice Helper to check per-player state in a game
@@ -237,4 +238,3 @@ contract NumberGamble is SepoliaConfig {
 
     receive() external payable {}
 }
-
