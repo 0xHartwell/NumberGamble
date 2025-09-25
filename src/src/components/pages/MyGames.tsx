@@ -9,7 +9,6 @@ import { CONTRACT_ABI, CONTRACT_ADDRESS } from '../../config/numberGamble';
 type GameTuple = readonly [string, number, number, bigint, `0x${string}`, string];
 const ZeroHash = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-const stateLabel = (s: number) => (s === 0 ? 'Waiting' : s === 1 ? 'Started' : s === 2 ? 'ReadyToOpen' : s === 3 ? 'Finished' : `${s}`);
 
 export function MyGamesPage() {
   const { address } = useAccount();

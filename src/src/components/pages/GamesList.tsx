@@ -6,7 +6,6 @@ import { BrowserProvider, Contract } from 'ethers';
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from '../../config/numberGamble';
 
 type GameTuple = readonly [string, number, number, bigint, `0x${string}`, string];
-const stateLabel = (s: number) => (s === 0 ? 'Waiting' : s === 1 ? 'Started' : s === 2 ? 'ReadyToOpen' : s === 3 ? 'Finished' : `${s}`);
 
 export function GamesListPage() {
   const { address } = useAccount();
@@ -180,4 +179,3 @@ function GameRow({ id, client, me, onJoin, onStart }: { id: number; client: any;
     </div>
   );
 }
-
