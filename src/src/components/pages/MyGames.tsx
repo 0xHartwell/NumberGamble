@@ -108,17 +108,49 @@ export function MyGamesPage() {
   };
 
   return (
-    <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-      <h3 style={{ marginTop: 0 }}>My Games</h3>
-      {!address && <div>Connect wallet to see your games.</div>}
-      {address && loading && <div>Loading…</div>}
-      {address && !loading && myIds.length === 0 && <div>No joined games yet.</div>}
-      <div style={{ display: 'grid', gap: 12 }}>
-        {myIds.map((id) => (
-          <MyGameRow key={id} id={id} client={client} me={address as `0x${string}`} busy={busyId === id} onContinue={onContinue} onFold={onFold} onDecrypt={onDecrypt} decrypted={decrypted[id]} />
-        ))}
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title flex items-center gap-2">
+          <span className="text-2xl">👤</span>
+          My Games
+        </h3>
       </div>
-    </section>
+
+      {!address ? (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">🔗</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Wallet Not Connected</h3>
+          <p className="text-gray-500">Connect your wallet to see your games</p>
+        </div>
+      ) : loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading your games...</p>
+        </div>
+      ) : myIds.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">🎯</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No games joined yet</h3>
+          <p className="text-gray-500">Join a game from the "All Games" tab to get started!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {myIds.map((id) => (
+            <MyGameRow
+              key={id}
+              id={id}
+              client={client}
+              me={address as `0x${string}`}
+              busy={busyId === id}
+              onContinue={onContinue}
+              onFold={onFold}
+              onDecrypt={onDecrypt}
+              decrypted={decrypted[id]}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -142,14 +174,54 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
   const canAct = Number(state) === 1 && action === 0;
   const isCreator = creator.toLowerCase() === me.toLowerCase();
 
+  const getStatusBadge = (state: number) => {
+    const stateInfo = {
+      0: { label: 'Waiting', class: 'status-badge status-waiting', icon: '⏳' },
+      1: { label: 'Started', class: 'status-badge status-started', icon: '🎲' },
+      2: { label: 'Ready', class: 'status-badge status-ready', icon: '🔓' },
+      3: { label: 'Finished', class: 'status-badge status-finished', icon: '✅' }
+    };
+    const info = stateInfo[state as keyof typeof stateInfo] || stateInfo[0];
+    return (
+      <span className={info.class}>
+        {info.icon} {info.label}
+      </span>
+    );
+  };
+
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ fontWeight: 600 }}>Game #{id} • {stateLabel(Number(state))}</div>
-          <div style={{ fontSize: 12, color: '#6b7280' }}>Creator: {creator} • Capacity: {capacity} • Pot: {formatEther(pot)} ETH</div>
+    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h4 className="text-lg font-semibold text-gray-900">Game #{id}</h4>
+            {getStatusBadge(Number(state))}
+            {isCreator && (
+              <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-md">
+                👑 Creator
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">👤</span>
+              <span className="text-gray-600">
+                Creator: <span className="font-mono text-xs">{creator.slice(0, 6)}...{creator.slice(-4)}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">👥</span>
+              <span className="text-gray-600">Capacity: {capacity}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">💰</span>
+              <span className="text-gray-600">Pot: <span className="font-semibold text-green-600">{formatEther(pot)} ETH</span></span>
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+
+        <div className="flex gap-2 ml-4">
           {Number(state) === 0 && isCreator && (
             <CreatorStart id={id} />
           )}
@@ -158,33 +230,99 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
           )}
           {canAct && (
             <>
-              <button disabled={busy} onClick={() => onContinue(id)}>{busy ? 'Continuing…' : 'Continue (0.0001 ETH)'}</button>
-              <button disabled={busy} onClick={() => onFold(id)}>{busy ? 'Folding…' : 'Fold'}</button>
+              <button
+                disabled={busy}
+                onClick={() => onContinue(id)}
+                className="btn-success px-4 py-2 text-sm"
+              >
+                {busy ? 'Processing...' : '💎 Continue (0.0001 ETH)'}
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => onFold(id)}
+                className="btn-secondary px-4 py-2 text-sm"
+              >
+                {busy ? 'Processing...' : '🏃 Fold'}
+              </button>
             </>
           )}
         </div>
       </div>
 
-      <div style={{ marginTop: 8 }}>
-        <div style={{ marginBottom: 6 }}>My Encrypted Rolls:</div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {(enc || []).map((h, i) => (
-            <code key={i} style={{ fontSize: 11, background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{h}</code>
-          ))}
+      {/* Encrypted Rolls Section */}
+      <div className="border-t pt-4">
+        <div className="mb-4">
+          <h5 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+            🔐 My Encrypted Rolls
+          </h5>
+
+          {Number(state) === 0 ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-700">
+                🎯 Cards will be dealt after the creator starts the game
+              </p>
+            </div>
+          ) : enc && enc.length > 0 ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-2">
+                {enc.map((hash, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                    <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                      {i + 1}
+                    </span>
+                    <code className="flex-1 text-xs font-mono text-gray-600 bg-white px-2 py-1 rounded border overflow-hidden">
+                      {hash}
+                    </code>
+                  </div>
+                ))}
+              </div>
+
+              {showDecrypt && (
+                <div className="flex items-center gap-4 mt-4">
+                  <button
+                    disabled={busy}
+                    onClick={() => onDecrypt(id)}
+                    className="btn-primary px-4 py-2 text-sm"
+                  >
+                    {busy ? 'Decrypting...' : '🔓 Decrypt My Rolls'}
+                  </button>
+                  {decrypted && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <span className="text-sm text-green-700">
+                        🎲 <strong>Your rolls:</strong> {decrypted.join(', ')}
+                        <span className="ml-2 text-green-600">
+                          (Max: {Math.max(...decrypted)})
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p className="text-sm text-gray-500">No encrypted rolls available</p>
+            </div>
+          )}
         </div>
-        {Number(state) === 0 && (
-          <div style={{ marginTop: 6, color: '#6b7280', fontSize: 12 }}>Cards are dealt after the creator starts the game.</div>
-        )}
-        {showDecrypt && (
-          <div style={{ marginTop: 8 }}>
-            <button disabled={busy} onClick={() => onDecrypt(id)}>{busy ? 'Decrypting…' : 'Decrypt My Rolls'}</button>
-            {decrypted && (
-              <div style={{ marginTop: 6 }}>Decrypted: {decrypted.join(', ')}</div>
-            )}
-          </div>
-        )}
+
         {Number(state) === 3 && (
-          <div style={{ marginTop: 6 }}>Winner: <span style={{ fontFamily: 'monospace' }}>{winner}</span></div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <h6 className="font-medium text-green-900">Game Finished!</h6>
+                <p className="text-sm text-green-700">
+                  Winner: <span className="font-mono font-medium">{winner.slice(0, 6)}...{winner.slice(-4)}</span>
+                  {winner.toLowerCase() === me.toLowerCase() && (
+                    <span className="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs rounded-md font-medium">
+                      🎉 You won!
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -205,7 +343,15 @@ function CreatorStart({ id }: { id: number }) {
       await tx.wait();
     } finally { setBusy(false); }
   };
-  return <button disabled={busy} onClick={onStart}>{busy ? 'Starting…' : 'Start'}</button>;
+  return (
+    <button
+      disabled={busy}
+      onClick={onStart}
+      className="btn-success px-4 py-2 text-sm"
+    >
+      {busy ? 'Starting...' : '🚀 Start Game'}
+    </button>
+  );
 }
 
 function CreatorOpen({ id }: { id: number }) {
@@ -222,5 +368,13 @@ function CreatorOpen({ id }: { id: number }) {
       await tx.wait();
     } finally { setBusy(false); }
   };
-  return <button disabled={busy} onClick={onOpen}>{busy ? 'Opening…' : 'Open'}</button>;
+  return (
+    <button
+      disabled={busy}
+      onClick={onOpen}
+      className="btn-warning px-4 py-2 text-sm"
+    >
+      {busy ? 'Opening...' : '🔓 Open Game'}
+    </button>
+  );
 }
