@@ -1,6 +1,6 @@
 // NumberGamble contract on Sepolia
 // Update CONTRACT_ADDRESS after deployment to Sepolia.
-export const CONTRACT_ADDRESS = '0x723e45D07A257551Dd86532dA06198D96222Ed02' as const;
+export const CONTRACT_ADDRESS = '0x71124cF96B8Dd8efcc2106AE85AF6EF9B92dC27B' as const;
 
 // Copied ABI from artifacts/contracts/NumberGamble.sol/NumberGamble.json
 // Note: Do not import JSON files in frontend per project rules.

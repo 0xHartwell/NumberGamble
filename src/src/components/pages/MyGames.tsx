@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, formatEther, http } from 'viem';
 import { sepolia } from 'wagmi/chains';
 import { useAccount, useWalletClient } from 'wagmi';
 import { BrowserProvider, Contract } from 'ethers';
@@ -140,15 +140,22 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
   const [creator, capacity, state, pot, , winner] = g;
   const showDecrypt = enc && enc.some((h) => h !== ZeroHash) && Number(state) === 1;
   const canAct = Number(state) === 1 && action === 0;
+  const isCreator = creator.toLowerCase() === me.toLowerCase();
 
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontWeight: 600 }}>Game #{id} • {stateLabel(Number(state))}</div>
-          <div style={{ fontSize: 12, color: '#6b7280' }}>Creator: {creator} • Capacity: {capacity} • Pot: {String(pot)}</div>
+          <div style={{ fontSize: 12, color: '#6b7280' }}>Creator: {creator} • Capacity: {capacity} • Pot: {formatEther(pot)} ETH</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          {Number(state) === 0 && isCreator && (
+            <CreatorStart id={id} />
+          )}
+          {Number(state) === 2 && isCreator && (
+            <CreatorOpen id={id} />
+          )}
           {canAct && (
             <>
               <button disabled={busy} onClick={() => onContinue(id)}>{busy ? 'Continuing…' : 'Continue (0.0001 ETH)'}</button>
@@ -165,6 +172,9 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
             <code key={i} style={{ fontSize: 11, background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{h}</code>
           ))}
         </div>
+        {Number(state) === 0 && (
+          <div style={{ marginTop: 6, color: '#6b7280', fontSize: 12 }}>Cards are dealt after the creator starts the game.</div>
+        )}
         {showDecrypt && (
           <div style={{ marginTop: 8 }}>
             <button disabled={busy} onClick={() => onDecrypt(id)}>{busy ? 'Decrypting…' : 'Decrypt My Rolls'}</button>
@@ -179,4 +189,38 @@ function MyGameRow({ id, client, me, busy, onContinue, onFold, onDecrypt, decryp
       </div>
     </div>
   );
+}
+
+function CreatorStart({ id }: { id: number }) {
+  const { data: walletClient } = useWalletClient();
+  const [busy, setBusy] = useState(false);
+  const onStart = async () => {
+    if (!walletClient) return;
+    setBusy(true);
+    try {
+      const provider = new BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+      const c = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI as any, signer);
+      const tx = await c.start(id);
+      await tx.wait();
+    } finally { setBusy(false); }
+  };
+  return <button disabled={busy} onClick={onStart}>{busy ? 'Starting…' : 'Start'}</button>;
+}
+
+function CreatorOpen({ id }: { id: number }) {
+  const { data: walletClient } = useWalletClient();
+  const [busy, setBusy] = useState(false);
+  const onOpen = async () => {
+    if (!walletClient) return;
+    setBusy(true);
+    try {
+      const provider = new BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+      const c = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI as any, signer);
+      const tx = await c.open(id);
+      await tx.wait();
+    } finally { setBusy(false); }
+  };
+  return <button disabled={busy} onClick={onOpen}>{busy ? 'Opening…' : 'Open'}</button>;
 }
