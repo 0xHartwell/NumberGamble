@@ -26,7 +26,12 @@
   "dependencies": {
     "encrypted-types": "^0.0.4",
     "@fhevm/solidity": "^0.7.0",
-    "@zama-fhe/oracle-solidity": "^0.1.0"
+    "@zama-fhe/oracle-solidity": "^0.1.0",
+    "@rainbow-me/rainbowkit": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "viem": "^2.0.0",
+    "wagmi": "^2.0.0"
   },
   "devDependencies": {
     "@fhevm/hardhat-plugin": "^0.0.1-6",
@@ -42,6 +47,12 @@
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "@zama-fhe/relayer-sdk": "^0.1.2",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "buffer": "^6.0.3",
+    "vite": "^5.0.0",
+    "vite-plugin-node-polyfills": "^0.17.0",
     "chai": "^4.5.0",
     "chai-as-promised": "^8.0.1",
     "cross-env": "^7.0.3",
@@ -66,6 +77,9 @@
     "contracts"
   ],
   "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "clean": "rimraf ./fhevmTemp ./artifacts ./cache ./coverage ./types ./coverage.json ./dist && npm run typechain",
     "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
     "coverage": "cross-env SOLIDITY_COVERAGE=true hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && npm run typechain",
@@ -78,7 +92,9 @@
     "test": "hardhat test",
     "test:sepolia": "hardhat test --network sepolia",
     "build:ts": "tsc --project tsconfig.json",
-    "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain"
+    "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
+    "deploy": "hardhat deploy",
+    "deploy:sepolia": "hardhat deploy --network sepolia"
   },
   "overrides": {
     "ws@>=7.0.0 <7.5.10": ">=7.5.10",
